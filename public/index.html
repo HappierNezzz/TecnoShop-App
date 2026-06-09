@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Superhéroes</title>
+    <style>
+        :root {
+            --primary: #2d3436;
+            --terracota: #e07a5f;
+            --terracota-hover: #c9654d;
+            --bg: #f0f2f5; 
+            --shadow-default: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 40px 20px; 
+            background: var(--bg); 
+            margin: 0; 
+        }
+
+        h2 { text-align: center; margin-bottom: 30px; font-weight: 700; color: var(--primary); }
+
+        .form-container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            max-width: 750px; 
+            margin: 0 auto 40px; 
+            box-shadow: var(--shadow-default);
+        }
+
+        .form-container h3 { 
+            margin: 0 0 20px 0; 
+            font-size: 1.4rem; 
+            color: var(--primary); 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 10px;
+        }
+
+        #heroForm {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-container input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        #imagen_url {
+            grid-column: span 1; 
+        }
+
+        .form-container button { 
+            grid-column: span 2;
+            background: var(--terracota); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            font-size: 16px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .form-container button:hover { background: var(--terracota-hover); transform: translateY(-2px); }
+
+        /* --- TARJETAS CON SOMBRA DE COLOR --- */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            gap: 30px; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+        }
+
+        .card { 
+            background: white; border-radius: 15px; overflow: hidden; 
+            transition: all 0.4s ease; 
+            border: 1px solid #eee; display: flex; flex-direction: column;
+            box-shadow: var(--shadow-default);
+        }
+
+        .card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 15px 30px var(--hero-color);
+            border-color: var(--hero-color);
+        }
+
+        .card-content { cursor: pointer; padding: 15px; text-align: center; flex-grow: 1; }
+        .card img { width: 100%; height: 250px; object-fit: contain; margin-bottom: 10px; }
+        .card h3 { margin: 10px 0 5px; color: var(--primary); }
+
+        .card-actions { padding: 15px; display: flex; gap: 10px; background: #fafafa; }
+        .btn-edit, .btn-delete { flex: 1; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #e7f1ff; color: #007bff; }
+        .btn-delete { background: #ffeef0; color: #dc3545; }
+
+        .modal { 
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(5px); overflow-y: auto; 
+        }
+        .modal-content { 
+            background: white; margin: 3% auto; border-radius: 20px; 
+            width: 90%; max-width: 800px; position: relative; animation: fadeIn 0.4s;
+        }
+        .modal-body { padding: 40px; }
+        .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; }
+        .modal-img { width: 100%; max-height: 450px; object-fit: contain; border-radius: 12px; background: #f9f9f9; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <h2>Gestor de Superhéroes</h2>
+    
+    <div class="form-container">
+        <h3>Datos del Héroe</h3>
+        <form id="heroForm">
+            <input type="hidden" id="id">
+            <input type="text" id="nombre" placeholder="Nombre (Ej. Flash)" required>
+            <input type="text" id="poder" placeholder="Poder" required>
+            <input type="text" id="fortaleza" placeholder="Fortaleza">
+            <input type="text" id="resistencia" placeholder="Resistencia">
+            <input type="text" id="debilidad" placeholder="Debilidad">
+            <input type="text" id="imagen_url" placeholder="Nombre de imagen (Ej. Flash.png)" required>
+            <button type="submit">Guardar Superhéroe</button>
+        </form>
+    </div>
+    
+    <div class="grid" id="heroesGrid"></div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <h2 id="modal-name" style="text-align:left; border-bottom: 3px solid var(--terracota); display:inline-block"></h2>
+                <img id="modal-img" class="modal-img" src="" alt="">
+                <div id="modal-info-text" style="font-size: 1.2rem; line-height: 1.6; margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api/heroes';
+        let currentHeroes = [];
+
+        function getHeroColor(name) {
+            const n = name.toLowerCase();
+            if (n.includes('superman')) return 'rgba(0, 102, 255, 0.4)';
+            if (n.includes('batman')) return 'rgba(50, 50, 50, 0.5)';
+            if (n.includes('wonder')) return 'rgba(255, 204, 0, 0.5)';
+            if (n.includes('flash')) return 'rgba(255, 0, 0, 0.5)';
+            if (n.includes('spider')) return 'rgba(255, 50, 50, 0.4)';
+            if (n.includes('hulk')) return 'rgba(0, 255, 0, 0.4)';
+            return 'rgba(224, 122, 95, 0.3)';
+        }
+
+        async function load() {
+            const res = await fetch(API);
+            currentHeroes = await res.json();
+            document.getElementById('heroesGrid').innerHTML = currentHeroes.map(h => `
+                <div class="card" style="--hero-color: ${getHeroColor(h.nombre)}">
+                    <div class="card-content" onclick="showDetails(${h.id})">
+                        <img src="/images/${h.imagen_url}" onerror="this.src='/images/Placeholder.png'">
+                        <h3>${h.nombre}</h3>
+                        <p>Clic para detalles</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-edit" onclick="event.stopPropagation(); edit(${h.id}, '${h.nombre}', '${h.poder}', '${h.fortaleza || ''}', '${h.resistencia || ''}', '${h.debilidad || ''}', '${h.imagen_url}')">Editar</button>
+                        <button class="btn-delete" onclick="event.stopPropagation(); del(${h.id})">Borrar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showDetails(id) {
+            const hero = currentHeroes.find(h => h.id === id);
+            if(hero) {
+                document.getElementById('modal-name').innerText = hero.nombre;
+                document.getElementById('modal-img').src = '/images/' + hero.imagen_url;
+                document.getElementById('modal-info-text').innerHTML = `
+                    <p><strong>⚡ Poder:</strong> ${hero.poder}</p>
+                    <p><strong>🛡️ Fortaleza:</strong> ${hero.fortaleza || 'N/A'}</p>
+                    <p><strong>🔋 Resistencia:</strong> ${hero.resistencia || 'N/A'}</p>
+                    <p><strong>⚠️ Debilidad:</strong> ${hero.debilidad || 'N/A'}</p>
+                `;
+                document.getElementById('infoModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = (e) => { if (e.target == document.getElementById('infoModal')) closeModal(); }
+
+        document.getElementById('heroForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('id').value;
+            const data = {
+                nombre: document.getElementById('nombre').value,
+                poder: document.getElementById('poder').value,
+                fortaleza: document.getElementById('fortaleza').value,
+                resistencia: document.getElementById('resistencia').value,
+                debilidad: document.getElementById('debilidad').value,
+                imagen_url: document.getElementById('imagen_url').value
+            };
+            await fetch(id ? `${API}/${id}` : API, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            e.target.reset();
+            document.getElementById('id').value = '';
+            load();
+        };
+
+        function edit(id, nom, pod, fort, resis, debil, img) {
+            document.getElementById('id').value = id;
+            document.getElementById('nombre').value = nom;
+            document.getElementById('poder').value = pod;
+            document.getElementById('fortaleza').value = fort;
+            document.getElementById('resistencia').value = resis;
+            document.getElementById('debilidad').value = debil;
+            document.getElementById('imagen_url').value = img;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function del(id) {
+            if(confirm('¿Eliminar héroe?')) {
+                await fetch(`${API}/${id}`, { method: 'DELETE' });
+                load();
+            }
+        }
+        load();
+    </script>
+</body>
+</html>
