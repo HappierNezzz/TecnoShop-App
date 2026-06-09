@@ -1,0 +1,115 @@
+<div class="cart-container">
+  <h2>Mi Carrito de Compras 🛒</h2>
+
+  @if (cartService.cartItems().length > 0) {
+    <div class="cart-layout">
+      <!-- Lista de Productos en el Carrito -->
+      <div class="cart-items-list">
+        @for (item of cartService.cartItems(); track item.id) {
+          <div class="cart-item-card">
+            <div class="item-image">
+              <img [src]="item.product?.imagen_url ? 'assets/images/' + (item.product!.imagen_url.startsWith('/') ? item.product!.imagen_url.substring(1) : item.product!.imagen_url) : 'assets/images/Placeholder.png'" [alt]="item.product?.nombre">
+            </div>
+            
+            <div class="item-details">
+              <h4>{{ item.product?.nombre }}</h4>
+              <span class="item-category">{{ item.product?.categoria }}</span>
+              <p class="item-price-unit">{{ item.product?.precio | currency:'USD':'symbol':'1.2-2' }} c/u</p>
+            </div>
+
+            <div class="item-quantity">
+              <button (click)="decrementQuantity(item)" class="btn-qty">-</button>
+              <span class="qty-val">{{ item.cantidad }}</span>
+              <button (click)="incrementQuantity(item)" class="btn-qty">+</button>
+            </div>
+
+            <div class="item-subtotal">
+              <span class="subtotal-val">{{ (item.cantidad * (item.product?.precio || 0)) | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+
+            <div class="item-remove">
+              <button (click)="removeFromCart(item)" class="btn-remove" title="Eliminar del carrito">
+                🗑️
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Resumen del Pedido -->
+      <div class="cart-summary-card">
+        <h3>Resumen del Pedido</h3>
+        <div class="summary-row">
+          <span>Productos totales:</span>
+          <strong>{{ cartService.cartCount() }}</strong>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total:</span>
+          <span class="total-price">{{ cartService.cartTotal() | currency:'USD':'symbol':'1.2-2' }}</span>
+        </div>
+        
+        <div class="summary-actions">
+          <button (click)="startCheckout()" class="btn-checkout">Proceder al Pago</button>
+          <button (click)="clearCart()" class="btn-clear">Vaciar Carrito</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal del Método de Pago -->
+    @if (showCheckoutForm) {
+      <div class="checkout-modal-overlay">
+        <div class="checkout-modal">
+          <div class="checkout-header">
+            <h3>💳 Método de Pago y Envío</h3>
+            <button (click)="cancelCheckout()" class="btn-close-modal">&times;</button>
+          </div>
+          
+          <form (ngSubmit)="processPayment()" #paymentForm="ngForm" class="payment-form">
+            <div class="form-group">
+              <label>Nombre del Tarjetahabiente</label>
+              <input type="text" [(ngModel)]="paymentData.nombreTarjeta" name="nombreTarjeta" placeholder="Ej. Juan Pérez" required>
+            </div>
+
+            <div class="form-group">
+              <label>Número de Tarjeta</label>
+              <input type="text" [(ngModel)]="paymentData.numeroTarjeta" name="numeroTarjeta" placeholder="XXXX XXXX XXXX XXXX" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Vencimiento (MM/AA)</label>
+                <input type="text" [(ngModel)]="paymentData.fechaExpiracion" name="fechaExpiracion" placeholder="12/28" required>
+              </div>
+              <div class="form-group">
+                <label>CVV</label>
+                <input type="password" [(ngModel)]="paymentData.cvv" name="cvv" placeholder="123" maxlength="3" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Dirección de Envío Completa</label>
+              <textarea [(ngModel)]="paymentData.direccion" name="direccion" rows="3" placeholder="Calle, Número, Colonia, Ciudad..." required></textarea>
+            </div>
+
+            <div class="checkout-summary-info">
+              <span>Monto total a pagar:</span>
+              <strong>{{ cartService.cartTotal() | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </div>
+
+            <div class="modal-actions">
+              <button type="submit" [disabled]="!paymentForm.valid" class="btn-confirm-pay">Confirmar Compra</button>
+              <button type="button" (click)="cancelCheckout()" class="btn-cancel-pay">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+  } @else {
+    <div class="empty-cart-message">
+      <div class="empty-icon">🛒</div>
+      <p>Tu carrito está vacío por ahora.</p>
+      <button routerLink="/catalog" class="btn-go-shop">Explorar Productos</button>
+    </div>
+  }
+</div>

@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Model } from 'objection';
 import knex from './database';
-import heroRoutes from './routes/hero.routes';
+import productRoutes from './routes/product.routes';
+import cartRoutes from './routes/cart.routes';
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
 
@@ -20,11 +21,12 @@ app.use(express.json());
 app.use(express.static('public')); // Esto sirve la página web y las imágenes
 
 // Conectar las rutas
-app.use('/api/heroes', heroRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 
 // Encender el servidor
-app.listen(3000, () => {
+app.listen(3000, '127.0.0.1', () => {
     console.log('🚀 ¡Servidor encendido y escuchando en http://localhost:3000!');
 });

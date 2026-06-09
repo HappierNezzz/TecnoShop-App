@@ -14,22 +14,23 @@ export async function up(knex: Knex): Promise<void> {
     });
   }
 
-  // Check and create favorites table
-  const hasFavorites = await knex.schema.hasTable('favorites');
-  if (!hasFavorites) {
-    await knex.schema.createTable('favorites', (table) => {
+  // Check and create cart_items table
+  const hasCartItems = await knex.schema.hasTable('cart_items');
+  if (!hasCartItems) {
+    await knex.schema.createTable('cart_items', (table) => {
       table.increments('id').primary();
       table.integer('user_id').unsigned().notNullable()
         .references('id').inTable('users').onDelete('CASCADE');
-      table.integer('heroe_id').unsigned().notNullable()
-        .references('id').inTable('catsuperheroe').onDelete('CASCADE');
-      table.unique(['user_id', 'heroe_id']);
+      table.integer('product_id').unsigned().notNullable()
+        .references('id').inTable('products').onDelete('CASCADE');
+      table.integer('cantidad').notNullable().defaultTo(1);
+      table.unique(['user_id', 'product_id']);
       table.timestamp('created_at').defaultTo(knex.fn.now());
     });
   }
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists('favorites');
+  await knex.schema.dropTableIfExists('cart_items');
   await knex.schema.dropTableIfExists('users');
 }

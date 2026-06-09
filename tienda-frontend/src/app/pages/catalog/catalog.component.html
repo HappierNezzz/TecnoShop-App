@@ -1,0 +1,35 @@
+<div class="catalog-header">
+  <h2>Catálogo de Productos</h2>
+  <p>Encuentra la mejor tecnología y accesorios al mejor precio.</p>
+</div>
+
+@if (loading) {
+  <div class="loader">Cargando productos...</div>
+} @else if (products.length > 0) {
+  <div class="hero-grid">
+    @for (product of products; track product.id) {
+      <div class="hero-card" [style.--hero-color]="getProductColor(product.categoria)">
+        <div class="card-image">
+          <img [src]="product.imagen_url ? 'assets/images/' + (product.imagen_url.startsWith('/') ? product.imagen_url.substring(1) : product.imagen_url) : 'assets/images/Placeholder.png'" [alt]="product.nombre">
+          <div class="overlay-category">
+            <span class="category-badge">{{ product.categoria }}</span>
+          </div>
+        </div>
+        <div class="card-content">
+          <h3>{{ product.nombre }}</h3>
+          <p class="description">{{ product.descripcion }}</p>
+          <div class="card-footer">
+            <span class="price-tag">{{ product.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+            <button
+              (click)="addToCart(product)"
+              class="btn-add-cart">
+              🛒 Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="empty-msg">No se encontraron productos.</div>
+}

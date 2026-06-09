@@ -2,24 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Superhéroes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=initial-scale=1.0">
+    <title>Gestor de Productos</title>
     <style>
         :root {
-            --primary: #2d3436;
-            --terracota: #e07a5f;
-            --terracota-hover: #c9654d;
-            --bg: #f0f2f5; 
-            --shadow-default: 0 4px 15px rgba(0,0,0,0.08);
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f5f6fa;
+            --shadow-default: 0 4px 15px rgba(0,0,0,0.05);
         }
 
         body { 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             padding: 40px 20px; 
             background: var(--bg); 
             margin: 0; 
+            color: #333;
         }
 
-        h2 { text-align: center; margin-bottom: 30px; font-weight: 700; color: var(--primary); }
+        h2 { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            font-weight: 800; 
+            color: var(--primary);
+            font-size: 2.2rem;
+        }
 
         .form-container { 
             background: white; 
@@ -28,6 +37,7 @@
             max-width: 750px; 
             margin: 0 auto 40px; 
             box-shadow: var(--shadow-default);
+            border: 1px solid rgba(0,0,0,0.03);
         }
 
         .form-container h3 { 
@@ -38,28 +48,46 @@
             padding-bottom: 10px;
         }
 
-        #heroForm {
+        #productForm {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
 
-        .form-container input { 
+        @media (max-width: 600px) {
+            #productForm {
+                grid-template-columns: 1fr;
+            }
+            #productForm button, #productForm select, #productForm textarea {
+                grid-column: span 1 !important;
+            }
+        }
+
+        .form-container input, .form-container select, .form-container textarea { 
             width: 100%; 
             padding: 12px; 
-            border: 1px solid #ccc; 
+            border: 1.5px solid #ddd; 
             border-radius: 8px; 
             box-sizing: border-box;
             font-size: 14px;
+            background: #fff;
+            color: #333;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-container input:focus, .form-container select:focus, .form-container textarea:focus {
+            border-color: var(--secondary);
+            outline: none;
         }
 
-        #imagen_url {
-            grid-column: span 1; 
+        .form-container textarea {
+            grid-column: span 2;
+            resize: vertical;
         }
 
         .form-container button { 
             grid-column: span 2;
-            background: var(--terracota); 
+            background: var(--secondary); 
             color: white; 
             border: none; 
             padding: 16px; 
@@ -70,130 +98,265 @@
             font-size: 16px;
             margin-top: 10px;
             transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
         }
-        .form-container button:hover { background: var(--terracota-hover); transform: translateY(-2px); }
+        
+        .form-container button:hover { 
+            background: #2980b9; 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
 
-        /* --- TARJETAS CON SOMBRA DE COLOR --- */
         .grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
             gap: 30px; 
-            max-width: 1100px; 
+            max-width: 1200px; 
             margin: 0 auto; 
         }
 
         .card { 
-            background: white; border-radius: 15px; overflow: hidden; 
-            transition: all 0.4s ease; 
-            border: 1px solid #eee; display: flex; flex-direction: column;
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            transition: all 0.3s ease; 
+            border: 1px solid rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-direction: column;
             box-shadow: var(--shadow-default);
+            position: relative;
         }
 
         .card:hover { 
-            transform: translateY(-10px); 
-            box-shadow: 0 15px 30px var(--hero-color);
-            border-color: var(--hero-color);
+            transform: translateY(-6px); 
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
         }
 
-        .card-content { cursor: pointer; padding: 15px; text-align: center; flex-grow: 1; }
-        .card img { width: 100%; height: 250px; object-fit: contain; margin-bottom: 10px; }
-        .card h3 { margin: 10px 0 5px; color: var(--primary); }
+        .card-content { 
+            cursor: pointer; 
+            padding: 20px; 
+            text-align: left; 
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card img { 
+            width: 100%; 
+            height: 180px; 
+            object-fit: contain; 
+            margin-bottom: 15px; 
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 5px;
+        }
+        
+        .card h3 { 
+            margin: 0 0 10px 0; 
+            color: var(--primary); 
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
 
-        .card-actions { padding: 15px; display: flex; gap: 10px; background: #fafafa; }
-        .btn-edit, .btn-delete { flex: 1; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .card .category-tag {
+            display: inline-block;
+            background: #eef2f7;
+            color: var(--secondary);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: fit-content;
+            margin-bottom: 10px;
+        }
+
+        .card .description {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin: 0 0 15px 0;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+
+        .card .price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .card .stock {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            font-weight: 600;
+        }
+
+        .card-actions { 
+            padding: 15px 20px; 
+            display: flex; 
+            gap: 10px; 
+            background: #fafafa; 
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn-edit, .btn-delete { 
+            flex: 1; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.85rem;
+            transition: background 0.2s ease;
+        }
+
         .btn-edit { background: #e7f1ff; color: #007bff; }
+        .btn-edit:hover { background: #d0e3ff; }
         .btn-delete { background: #ffeef0; color: #dc3545; }
+        .btn-delete:hover { background: #ffd0d5; }
 
         .modal { 
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); 
-            backdrop-filter: blur(5px); overflow-y: auto; 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(4px); 
+            overflow-y: auto; 
         }
-        .modal-content { 
-            background: white; margin: 3% auto; border-radius: 20px; 
-            width: 90%; max-width: 800px; position: relative; animation: fadeIn 0.4s;
-        }
-        .modal-body { padding: 40px; }
-        .close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; }
-        .modal-img { width: 100%; max-height: 450px; object-fit: contain; border-radius: 12px; background: #f9f9f9; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { 
+            background: white; 
+            margin: 5% auto; 
+            border-radius: 20px; 
+            width: 90%; 
+            max-width: 650px; 
+            position: relative; 
+            animation: fadeIn 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .modal-body { padding: 35px; }
+        .close { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #aaa; }
+        .close:hover { color: #555; }
+        
+        .modal-img { 
+            width: 100%; 
+            max-height: 300px; 
+            object-fit: contain; 
+            border-radius: 12px; 
+            background: #f9f9f9; 
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <h2>Gestor de Superhéroes</h2>
+    <h2>Gestor de Productos</h2>
     
     <div class="form-container">
-        <h3>Datos del Héroe</h3>
-        <form id="heroForm">
+        <h3>Datos del Producto</h3>
+        <form id="productForm">
             <input type="hidden" id="id">
-            <input type="text" id="nombre" placeholder="Nombre (Ej. Flash)" required>
-            <input type="text" id="poder" placeholder="Poder" required>
-            <input type="text" id="fortaleza" placeholder="Fortaleza">
-            <input type="text" id="resistencia" placeholder="Resistencia">
-            <input type="text" id="debilidad" placeholder="Debilidad">
-            <input type="text" id="imagen_url" placeholder="Nombre de imagen (Ej. Flash.png)" required>
-            <button type="submit">Guardar Superhéroe</button>
+            <input type="text" id="nombre" placeholder="Nombre del Producto (Ej. Ratón Gamer)" required>
+            <select id="categoria" required>
+                <option value="" disabled selected>Selecciona una categoría</option>
+                <option value="Celulares">Celulares</option>
+                <option value="Computadoras">Computadoras</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="Monitores">Monitores</option>
+                <option value="Audio">Audio</option>
+                <option value="Muebles">Muebles</option>
+                <option value="Otros">Otros</option>
+            </select>
+            <input type="number" id="precio" placeholder="Precio ($)" step="0.01" min="0" required>
+            <input type="number" id="stock" placeholder="Stock disponible" min="0" required>
+            <input type="text" id="imagen_url" placeholder="Nombre de archivo de imagen (Ej. mouse.png)" required>
+            <textarea id="descripcion" placeholder="Descripción del producto" rows="3" required></textarea>
+            <button type="submit">Guardar Producto</button>
         </form>
     </div>
     
-    <div class="grid" id="heroesGrid"></div>
+    <div class="grid" id="productsGrid"></div>
 
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <div class="modal-body">
-                <h2 id="modal-name" style="text-align:left; border-bottom: 3px solid var(--terracota); display:inline-block"></h2>
+                <span id="modal-category" class="category-tag" style="background:#eef2f7; color:#3498db; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:600; text-transform:uppercase; display:inline-block; margin-bottom:12px;"></span>
+                <h2 id="modal-name" style="text-align:left; margin-top:0; font-weight:800; color:var(--primary); font-size:1.8rem; margin-bottom:15px;"></h2>
                 <img id="modal-img" class="modal-img" src="" alt="">
-                <div id="modal-info-text" style="font-size: 1.2rem; line-height: 1.6; margin-top: 20px;"></div>
+                <div id="modal-info-text" style="font-size: 1.05rem; line-height: 1.6; color:#555;"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const API = 'http://localhost:3000/api/heroes';
-        let currentHeroes = [];
-
-        function getHeroColor(name) {
-            const n = name.toLowerCase();
-            if (n.includes('superman')) return 'rgba(0, 102, 255, 0.4)';
-            if (n.includes('batman')) return 'rgba(50, 50, 50, 0.5)';
-            if (n.includes('wonder')) return 'rgba(255, 204, 0, 0.5)';
-            if (n.includes('flash')) return 'rgba(255, 0, 0, 0.5)';
-            if (n.includes('spider')) return 'rgba(255, 50, 50, 0.4)';
-            if (n.includes('hulk')) return 'rgba(0, 255, 0, 0.4)';
-            return 'rgba(224, 122, 95, 0.3)';
-        }
+        const API = 'http://localhost:3000/api/products';
+        let currentProducts = [];
 
         async function load() {
-            const res = await fetch(API);
-            currentHeroes = await res.json();
-            document.getElementById('heroesGrid').innerHTML = currentHeroes.map(h => `
-                <div class="card" style="--hero-color: ${getHeroColor(h.nombre)}">
-                    <div class="card-content" onclick="showDetails(${h.id})">
-                        <img src="/images/${h.imagen_url}" onerror="this.src='/images/Placeholder.png'">
-                        <h3>${h.nombre}</h3>
-                        <p>Clic para detalles</p>
+            try {
+                const res = await fetch(API);
+                currentProducts = await res.json();
+                
+                document.getElementById('productsGrid').innerHTML = currentProducts.map(p => `
+                    <div class="card">
+                        <div class="card-content" onclick="showDetails(${p.id})">
+                            <img src="/images/${p.imagen_url}" onerror="this.src='/images/Placeholder.png'">
+                            <span class="category-tag">${p.categoria}</span>
+                            <h3>${p.nombre}</h3>
+                            <p class="description">${p.descripcion || 'Sin descripción'}</p>
+                            <div class="price-row">
+                                <span class="price">$${parseFloat(p.precio).toFixed(2)}</span>
+                                <span class="stock">Stock: ${p.stock}</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-edit" onclick="event.stopPropagation(); edit(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', '${p.categoria}', ${p.precio}, ${p.stock}, '${p.imagen_url.replace(/'/g, "\\'")}', '${(p.descripcion || '').replace(/'/g, "\\'").replace(/\n/g, ' ')}')">Editar</button>
+                            <button class="btn-delete" onclick="event.stopPropagation(); del(${p.id})">Borrar</button>
+                        </div>
                     </div>
-                    <div class="card-actions">
-                        <button class="btn-edit" onclick="event.stopPropagation(); edit(${h.id}, '${h.nombre}', '${h.poder}', '${h.fortaleza || ''}', '${h.resistencia || ''}', '${h.debilidad || ''}', '${h.imagen_url}')">Editar</button>
-                        <button class="btn-delete" onclick="event.stopPropagation(); del(${h.id})">Borrar</button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (err) {
+                console.error("Error al cargar productos:", err);
+            }
         }
 
         function showDetails(id) {
-            const hero = currentHeroes.find(h => h.id === id);
-            if(hero) {
-                document.getElementById('modal-name').innerText = hero.nombre;
-                document.getElementById('modal-img').src = '/images/' + hero.imagen_url;
+            const product = currentProducts.find(p => p.id === id);
+            if (product) {
+                document.getElementById('modal-name').innerText = product.nombre;
+                document.getElementById('modal-category').innerText = product.categoria;
+                document.getElementById('modal-img').src = '/images/' + product.imagen_url;
+                document.getElementById('modal-img').onerror = function() { this.src = '/images/Placeholder.png'; };
                 document.getElementById('modal-info-text').innerHTML = `
-                    <p><strong>⚡ Poder:</strong> ${hero.poder}</p>
-                    <p><strong>🛡️ Fortaleza:</strong> ${hero.fortaleza || 'N/A'}</p>
-                    <p><strong>🔋 Resistencia:</strong> ${hero.resistencia || 'N/A'}</p>
-                    <p><strong>⚠️ Debilidad:</strong> ${hero.debilidad || 'N/A'}</p>
+                    <p style="margin-bottom:10px;">${product.descripcion || 'Sin descripción'}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; font-weight:bold; border-top:1px solid #eee; padding-top:15px;">
+                        <span style="font-size:1.4rem; color:var(--success)">$${parseFloat(product.precio).toFixed(2)}</span>
+                        <span style="color:#7f8c8d">Disponibles: ${product.stock} unidades</span>
+                    </div>
                 `;
                 document.getElementById('infoModal').style.display = 'block';
                 document.body.style.overflow = 'hidden';
@@ -207,44 +370,88 @@
 
         window.onclick = (e) => { if (e.target == document.getElementById('infoModal')) closeModal(); }
 
-        document.getElementById('heroForm').onsubmit = async (e) => {
+        document.getElementById('productForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('id').value;
             const data = {
                 nombre: document.getElementById('nombre').value,
-                poder: document.getElementById('poder').value,
-                fortaleza: document.getElementById('fortaleza').value,
-                resistencia: document.getElementById('resistencia').value,
-                debilidad: document.getElementById('debilidad').value,
-                imagen_url: document.getElementById('imagen_url').value
+                categoria: document.getElementById('categoria').value,
+                precio: parseFloat(document.getElementById('precio').value),
+                stock: parseInt(document.getElementById('stock').value),
+                imagen_url: document.getElementById('imagen_url').value,
+                descripcion: document.getElementById('descripcion').value
             };
-            await fetch(id ? `${API}/${id}` : API, {
-                method: id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            e.target.reset();
-            document.getElementById('id').value = '';
-            load();
+            
+            // Simular inicio de sesión o token si la API protegida lo pide en backend.
+            // Para el admin local estático, el backend requiere autenticación si está protegido,
+            // pero para desarrollo en esta página estática podemos inyectar un token desde localStorage si existe,
+            // o si la API de creación está protegida, pasamos la cabecera correspondiente.
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            try {
+                const url = id ? `${API}/${id}` : API;
+                const method = id ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: headers,
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    e.target.reset();
+                    document.getElementById('id').value = '';
+                    load();
+                } else {
+                    const errData = await response.json();
+                    alert("Error al guardar: " + (errData.message || response.statusText));
+                }
+            } catch (err) {
+                console.error("Error al guardar producto:", err);
+                alert("Error al conectar con la API.");
+            }
         };
 
-        function edit(id, nom, pod, fort, resis, debil, img) {
+        function edit(id, nom, cat, prec, stock, img, desc) {
             document.getElementById('id').value = id;
             document.getElementById('nombre').value = nom;
-            document.getElementById('poder').value = pod;
-            document.getElementById('fortaleza').value = fort;
-            document.getElementById('resistencia').value = resis;
-            document.getElementById('debilidad').value = debil;
+            document.getElementById('categoria').value = cat;
+            document.getElementById('precio').value = prec;
+            document.getElementById('stock').value = stock;
             document.getElementById('imagen_url').value = img;
+            document.getElementById('descripcion').value = desc;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function del(id) {
-            if(confirm('¿Eliminar héroe?')) {
-                await fetch(`${API}/${id}`, { method: 'DELETE' });
-                load();
+            if (confirm('¿Estás seguro de eliminar este producto?')) {
+                const token = localStorage.getItem('token');
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                try {
+                    const response = await fetch(`${API}/${id}`, { 
+                        method: 'DELETE',
+                        headers: headers
+                    });
+                    
+                    if (response.ok) {
+                        load();
+                    } else {
+                        const errData = await response.json();
+                        alert("Error al eliminar: " + (errData.message || response.statusText));
+                    }
+                } catch (err) {
+                    console.error("Error al borrar producto:", err);
+                }
             }
         }
+        
         load();
     </script>
 </body>
